@@ -17,19 +17,20 @@ public class ImageDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.item_photo);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.item_photo), (v, insets) -> {
+        setContentView(R.layout.activity_image_detail);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        ImageView imageView = findViewById(R.id.imageDetail);
+
         String path = getIntent().getStringExtra("image_url");
         if(path != null){
             Glide.with(this)
                     .load(path)
-                    .into((ImageView) findViewById(R.id.image));
+                    .into(imageView);
         }
-
     }
 }

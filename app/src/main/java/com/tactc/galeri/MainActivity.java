@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private PhotoAdapter adapter;
-    private ArrayList<String> imagePaths;
+    private ArrayList<MediaFile> mediaFiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +50,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadImages() {
-        imagePaths = getAllImages();
-        adapter = new PhotoAdapter(imagePaths, this);
+        mediaFiles = getAllImages();
+        adapter = new PhotoAdapter(mediaFiles, this);
         recyclerView.setAdapter(adapter);
     }
 
-    private ArrayList<String> getAllImages() {
-        ArrayList<String> images = new ArrayList<>();
+    private ArrayList<MediaFile> getAllImages() {
+        ArrayList<MediaFile> images = new ArrayList<>();
+
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.Images.Media.DATA};
 
@@ -67,12 +68,24 @@ public class MainActivity extends AppCompatActivity {
             int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             while (cursor.moveToNext()) {
                 String imagePath = cursor.getString(columnIndex);
-                images.add(imagePath);
+                images.add(new MediaFile(imagePath, MediaFile.TYPE_IMAGE));
             }
             cursor.close();
         }
-        return images;
-    }
+
+        Uri videoUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        Cursor videoCursor = getContentResolver().query(videoUri, projection, null, null, MediaStore.Video.Media.DATE_ADDED + " DESC");
+
+        if (videoCursor != null) {
+            int columnIndex = videoCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
+            while (videoCursor.moveToNext()) {
+                String videoPath = videoCursor.getString(columnIndex);
+                images.add(new MediaFile(videoPath, MediaFile.TYPE_VIDEO));
+            }
+            videoCursor.close();
+        }
+
+        return images;}
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

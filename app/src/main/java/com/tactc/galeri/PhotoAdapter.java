@@ -13,24 +13,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.RecyclerViewHolder> {
-    private final List<String> photoPaths;
-    private final Context context;
 
+    private final Context context;
+    private final ArrayList<MediaFile> mediaFiles;
     // Yapıcı metod (constructor, sınıftan nesne oluşunca ilk çalışacak işlemler)
-    public PhotoAdapter(List<String> photoPaths, Context context) {
-        this.photoPaths = photoPaths;
+    public PhotoAdapter(ArrayList<MediaFile> mediaFiles, Context context) {
+        this.mediaFiles = mediaFiles;
         this.context = context;
     }
 
+
     public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView imageView;
+        private final ImageView imageView, playIcon;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
+            playIcon = itemView.findViewById(R.id.playIcon);
         }
     }
 
@@ -44,21 +47,32 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.RecyclerView
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
-        File imgFile = new File(photoPaths.get(position));
+        MediaFile mediaFile = mediaFiles.get(position);
 
-        if (imgFile.exists()) {
-            Glide.with(context).load(imgFile).into(holder.imageView);
+        Glide.with(context).load(mediaFile.getPath()).into(holder.imageView);
 
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, ImageDetailActivity.class);
-                intent.putExtra("image_url", photoPaths.get(position));
-                context.startActivity(intent);
-            });
+        if(mediaFile.getType()==MediaFile.TYPE_VIDEO){
+            holder.playIcon.setVisibility(View.VISIBLE);
+        } else{
+            holder.playIcon.setVisibility(View.GONE);
         }
+
+
+        holder.itemView.setOnClickListener(v -> {
+            if (mediaFile.getType() == MediaFile.TYPE_VIDEO) {
+                Intent intent = new Intent(context, VideoPlayerActivity.class);
+                intent.putExtra("videoPath", mediaFile.getPath());
+                context.startActivity(intent);
+            } else {
+                Intent intent = new Intent(context, ImageDetailActivity.class);
+                intent.putExtra("image_url", mediaFile.getPath());
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return photoPaths.size();
+        return mediaFiles.size();
     }
 }
